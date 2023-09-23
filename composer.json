@@ -1,0 +1,22 @@
+{
+    "name": "packagesuite/pdf",
+    "description": "An package for handle pdf files",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Packagesuite\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "packagesuite"
+        }
+    ],
+    "require-dev": {
+        "setasign/fpdf": "^1.8"
+    },
+    "require": {
+        "ext-zlib": "*"
+    }
+}
