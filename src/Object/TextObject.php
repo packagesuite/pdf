@@ -49,7 +49,6 @@ class TextObject extends PdfObject
 
         $content = "BT\n{$position}\n /Font1 {$this->fontSize} Tf\n ({$this->text}) Tj\nET";
 
-//        $content = gzcompress($content);
         return $this->add($content);
     }
 }

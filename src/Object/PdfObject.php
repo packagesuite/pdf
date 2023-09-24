@@ -15,9 +15,14 @@ abstract class PdfObject
     protected string $buffer = '';
 
     /**
+     * @var bool
+     */
+    protected bool $compress = true;
+
+    /**
      * @return PdfObject
      */
-    abstract protected function build() : PdfObject;
+    abstract protected function build(): PdfObject;
 
     /**
      * @return string
@@ -41,7 +46,7 @@ abstract class PdfObject
      * @param string $content
      * @return $this
      */
-    protected function add(string $content) : PdfObject
+    protected function add(string $content): PdfObject
     {
         $this->buffer .= $content . PHP_EOL;
 
@@ -51,7 +56,7 @@ abstract class PdfObject
     /**
      * @return $this
      */
-    public function toPdfObject() : string
+    public function toPdfObject(): string
     {
         $this->buffer = '';
         $this->build();
@@ -61,5 +66,30 @@ abstract class PdfObject
         $object .= "endobj" . PHP_EOL;
 
         return $object;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isCompressable(): bool
+    {
+        if ($this instanceof CompressableInterface && $this->compress) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $content
+     * @return string
+     */
+    public function compress(string $content): string
+    {
+        if ($this->isCompressable()) {
+            $content = gzcompress($content);
+        }
+
+        return $content;
     }
 }

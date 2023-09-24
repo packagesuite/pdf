@@ -2,7 +2,7 @@
 
 namespace PackageSuitePdf\Object;
 
-class TextObjectPool extends PdfObject
+class TextObjectPool extends PdfObject implements CompressableInterface
 {
     /**
      * @var TextObject[]
@@ -10,29 +10,32 @@ class TextObjectPool extends PdfObject
     protected array $textObjects = [];
 
     /**
+     * @param array $textObjects
+     */
+    public function __construct(array $textObjects = [])
+    {
+        $this->textObjects = $textObjects;
+    }
+
+    /**
      * @return PdfObject
      */
     protected function build(): PdfObject
     {
         $content = "";
+        $headerCompression = "";
 
         foreach ($this->textObjects as $textObject) {
             $content .= $textObject->build()->__toString() . PHP_EOL;
         }
 
+        if ($this->isCompressable()) {
+            $content = $this->compress($content);
+            $headerCompression = "/Filter /FlateDecode";
+        }
+
         $length = strlen($content);
 
-        return $this->add("<< /Length {$length} >>\nstream\n{$content}\nendstream");
-    }
-
-    /**
-     * @param TextObject $textObject
-     * @return TextObjectPool
-     */
-    public function addText(TextObject $textObject) : TextObjectPool
-    {
-        $this->textObjects[] = $textObject;
-
-        return $this;
+        return $this->add("<< {$headerCompression} /Length {$length} $headerCompression >>\nstream\n{$content}\nendstream");
     }
 }

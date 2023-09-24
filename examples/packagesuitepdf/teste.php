@@ -9,7 +9,6 @@ $pdf = new \PackageSuitePdf\Pdf();
 
 $composer = $pdf->getComposer();
 
-
 $cell = new Cell("Texto", 50, 30);
 $composer->cell($cell);
 

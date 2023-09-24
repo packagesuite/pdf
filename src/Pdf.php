@@ -127,12 +127,8 @@ class Pdf
             $objectNumber++;
         }
 
-        $textObjectPool = new TextObjectPool();
-
-        /** @var Cell $cell */
-        foreach ($composer->cells() as $cell) {
-            $textObjectPool->addText($cell->getTextObject());
-        }
+        $textObjects = array_map(fn (Cell $cell) => $cell->get(), $composer->cells());
+        $textObjectPool = new TextObjectPool($textObjects);
 
         $this->newObject($textObjectPool, $objectNumber);
 
