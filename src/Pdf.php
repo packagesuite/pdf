@@ -1,18 +1,22 @@
 <?php
 
-namespace Packagesuite;
+namespace PackageSuitePdf;
 
-use Packagesuite\Object\Catalog;
-use Packagesuite\Object\Page;
-use Packagesuite\Object\Pages;
-use Packagesuite\Object\PdfObject;
-use Packagesuite\Object\ProcSet;
-use Packagesuite\Object\TextObject;
+use PackageSuitePdf\Composition\Cell;
+use PackageSuitePdf\Composition\Composer;
+use PackageSuitePdf\Object\Catalog;
+use PackageSuitePdf\Object\Page;
+use PackageSuitePdf\Object\Pages;
+use PackageSuitePdf\Object\PdfObject;
+use PackageSuitePdf\Object\PositionTextObject;
+use PackageSuitePdf\Object\ProcSet;
+use PackageSuitePdf\Object\TextObject;
+use PackageSuitePdf\Object\TextObjectPool;
 
 class Pdf
 {
     /**
-     * @var Object[]
+     * @var PdfObject[]
      */
     private array $objects;
 
@@ -22,6 +26,11 @@ class Pdf
     private string $buffer;
 
     /**
+     * @var Composer
+     */
+    protected Composer $composer;
+
+    /**
      * @var array
      */
     private array $referenceTable;
@@ -29,6 +38,8 @@ class Pdf
     public function __construct()
     {
         $this->buffer = '';
+        $this->composer = new Composer();
+
         $this->addObject(new Catalog());
         $this->addObject(new Pages());
         $this->addObject(new Page());
@@ -51,7 +62,7 @@ class Pdf
      */
     public function buildPdf(): void
     {
-        $this->addToBuffer("%PDF-1.7" . PHP_EOL);
+        $this->buffer("%PDF-1.7" . PHP_EOL);
 
         $objectNumber = 0;
 
@@ -64,43 +75,43 @@ class Pdf
             $objectNumber++;
         }
 
-        $this->addToBuffer(PHP_EOL);
-
         $this->makeXreference();
 
-        $this->addToBuffer("%%EOF" . PHP_EOL);
+        $this->buffer("%%EOF" . PHP_EOL);
 
         file_put_contents("teste.pdf", $this->buffer);
     }
 
     private function makeXreference(): void
     {
-        $this->addToBuffer("xref" . PHP_EOL);
+        $this->buffer("xref" . PHP_EOL);
 
         $numberOfObjects = count($this->objects) + 1;
 
-        $this->addToBuffer( "0 {$numberOfObjects}" . PHP_EOL);
-        $this->addToBuffer("0000000000 65535 f" . PHP_EOL);
+        $this->buffer( "0 {$numberOfObjects}" . PHP_EOL)
+            ->buffer("0000000000 65535 f" . PHP_EOL);
 
         foreach ($this->objects as $key => $object) {
             $length = $this->referenceTable[$key];
             $bufferLength = str_pad($length, 10, '0', STR_PAD_LEFT);
-            $this->addToBuffer(sprintf("%s 00000 n", $bufferLength) . PHP_EOL);
+            $this->buffer(sprintf("%s 00000 n", $bufferLength) . PHP_EOL);
         }
 
-        $this->addToBuffer("trailer" . PHP_EOL);
-        $this->addToBuffer("<< /Root 1 0 R  /Size 14 >>" . PHP_EOL);
-        $this->addToBuffer("startxref" . PHP_EOL);
-        $this->addToBuffer(strlen($this->buffer) . PHP_EOL);
+        $this->buffer("trailer" . PHP_EOL)
+            ->buffer("<< /Root 1 0 R  /Size 14 >>" . PHP_EOL)
+            ->buffer("startxref" . PHP_EOL)
+            ->buffer(strlen($this->buffer) . PHP_EOL);
     }
 
     /**
      * @param string $content
-     * @return void
+     * @return Pdf
      */
-    private function addToBuffer(string $content): void
+    private function buffer(string $content): Pdf
     {
         $this->buffer .= $content;
+
+        return $this;
     }
 
     /**
@@ -110,27 +121,63 @@ class Pdf
      */
     private function newObject(PdfObject $object, int $objectNumber): void
     {
-        $newObjectNumber = $objectNumber + 1;
+        $object = sprintf($object->toPdfObject(), $objectNumber + 1);
 
-        $this->addToBuffer("{$newObjectNumber} 0 obj" . PHP_EOL);
-        $this->addToBuffer($object->__toString() . PHP_EOL);
-        $this->addToBuffer("endobj" . PHP_EOL);
-
+        $this->buffer($object);
 
         $this->referenceTable[$objectNumber] = strlen($this->buffer);
     }
 
-    public function addRow(string $text)
+    public function addRow(string $text, PositionTextObject $positionTextObject)
     {
-        $this->addObject(new TextObject($text));
+        $this->addObject(new TextObject($text, $positionTextObject));
 
         return $this;
     }
 
-    public function addLineBreak()
+    public function addLineBreak(PositionTextObject $positionTextObject)
     {
-        $this->addObject(new TextObject(""));
+        $this->addObject(new TextObject("", $positionTextObject));
 
         return $this;
+    }
+
+    /**
+     * @return Composer
+     */
+    public function getComposer(): Composer
+    {
+        return $this->composer;
+    }
+
+    public function export(Composer $composer)
+    {
+        $this->buffer("%PDF-1.7" . PHP_EOL);
+
+        $objectNumber = 0;
+
+        /**
+         * @var int $key
+         * @var Object\PdfObject $object
+         */
+        foreach ($this->objects as $object) {
+            $this->newObject($object, $objectNumber);
+            $objectNumber++;
+        }
+
+        $textObjectPool = new TextObjectPool();
+        /** @var Cell $cell */
+        foreach ($composer->cells() as $cell) {
+            $textObjectPool->addText($cell->getTextObject());
+        }
+
+        $this->newObject($textObjectPool, $objectNumber);
+
+        $this->makeXreference();
+
+        $this->buffer("%%EOF" . PHP_EOL);
+
+        file_put_contents("teste_compose.pdf", $this->buffer);
+
     }
 }

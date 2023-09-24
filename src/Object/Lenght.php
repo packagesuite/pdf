@@ -1,6 +1,6 @@
 <?php
 
-namespace Packagesuite\Object;
+namespace PackageSuitePdf\Object;
 
 class Lenght extends PdfObject
 {
@@ -14,8 +14,6 @@ class Lenght extends PdfObject
      */
     protected function build(): PdfObject
     {
-        $this->object = "<< {$this->getType()} 10 >>";
-
-        return $this;
+        return $this->add("<< {$this->getType()} 10 >>");
     }
 }

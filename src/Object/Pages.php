@@ -1,7 +1,10 @@
 <?php
 
-namespace Packagesuite\Object;
+namespace PackageSuitePdf\Object;
 
+/**
+ * TODO What is this? I dont know, but for while this need to be like that to work
+ */
 class Pages extends PdfObject
 {
     /**
@@ -14,8 +17,6 @@ class Pages extends PdfObject
      */
     protected function build(): PdfObject
     {
-        $this->object = "<< /Type {$this->getType()} /Kids [ 3 0 R ] /Count 1 >>";
-
-        return $this;
+        return $this->add("<< /Type {$this->getType()} /Kids [ 3 0 R ] /Count 1 >>");
     }
 }

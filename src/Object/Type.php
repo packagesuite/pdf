@@ -1,6 +1,6 @@
 <?php
 
-namespace Packagesuite\Object;
+namespace PackageSuitePdf\Object;
 
 enum Type
 {

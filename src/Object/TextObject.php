@@ -1,6 +1,6 @@
 <?php
 
-namespace Packagesuite\Object;
+namespace PackageSuitePdf\Object;
 
 class TextObject extends PdfObject
 {
@@ -10,18 +10,23 @@ class TextObject extends PdfObject
     private string $text;
 
     /**
+     * @var PositionTextObject
+     */
+    private PositionTextObject $positionTextObject;
+
+    /**
      * @var int
      */
     private int $fontSize = 10;
 
     /**
      * @param string $text
+     * @param PositionTextObject $positionTextObject
      */
-    public function __construct(string $text)
+    public function __construct(string $text, PositionTextObject $positionTextObject)
     {
         $this->text = $text;
-
-        parent::__construct();
+        $this->positionTextObject = $positionTextObject;
     }
 
     /**
@@ -35,24 +40,16 @@ class TextObject extends PdfObject
         return $this;
     }
 
-
-
     /**
      * @return PdfObject
      */
     protected function build(): PdfObject
     {
+        $position = $this->positionTextObject->build()->__toString();
 
-        $positionTextObject = new PositionTextObject(170, 450, 1,0, 0,1);
-
-        $content = "BT\n{$positionTextObject->__toString()}\n /Font1 {$this->fontSize} Tf\n ({$this->text}) Tj\nET";
+        $content = "BT\n{$position}\n /Font1 {$this->fontSize} Tf\n ({$this->text}) Tj\nET";
 
 //        $content = gzcompress($content);
-
-        $length = strlen($content);
-
-        $this->object = "<< /Length {$length} >>\nstream\n{$content}\nendstream";
-
-        return $this;
+        return $this->add($content);
     }
 }
