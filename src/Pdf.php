@@ -57,30 +57,6 @@ class Pdf
         return $this;
     }
 
-    /**
-     * @return void
-     */
-    public function buildPdf(): void
-    {
-        $this->buffer("%PDF-1.7" . PHP_EOL);
-
-        $objectNumber = 0;
-
-        /**
-         * @var int $key
-         * @var Object\PdfObject $object
-         */
-        foreach ($this->objects as $object) {
-            $this->newObject($object, $objectNumber);
-            $objectNumber++;
-        }
-
-        $this->makeXreference();
-
-        $this->buffer("%%EOF" . PHP_EOL);
-
-        file_put_contents("teste.pdf", $this->buffer);
-    }
 
     private function makeXreference(): void
     {
@@ -128,20 +104,6 @@ class Pdf
         $this->referenceTable[$objectNumber] = strlen($this->buffer);
     }
 
-    public function addRow(string $text, PositionTextObject $positionTextObject)
-    {
-        $this->addObject(new TextObject($text, $positionTextObject));
-
-        return $this;
-    }
-
-    public function addLineBreak(PositionTextObject $positionTextObject)
-    {
-        $this->addObject(new TextObject("", $positionTextObject));
-
-        return $this;
-    }
-
     /**
      * @return Composer
      */
@@ -150,7 +112,7 @@ class Pdf
         return $this->composer;
     }
 
-    public function export(Composer $composer)
+    public function export(Composer $composer): void
     {
         $this->buffer("%PDF-1.7" . PHP_EOL);
 
@@ -166,6 +128,7 @@ class Pdf
         }
 
         $textObjectPool = new TextObjectPool();
+
         /** @var Cell $cell */
         foreach ($composer->cells() as $cell) {
             $textObjectPool->addText($cell->getTextObject());
@@ -178,6 +141,5 @@ class Pdf
         $this->buffer("%%EOF" . PHP_EOL);
 
         file_put_contents("teste_compose.pdf", $this->buffer);
-
     }
 }
