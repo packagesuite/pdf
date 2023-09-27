@@ -2,6 +2,9 @@
 
 namespace PackageSuitePdf\Composition;
 
+use PackageSuitePdf\Composition\Page\Page;
+use PackageSuitePdf\Composition\Page\PageSizeException;
+
 class Composer
 {
     /**

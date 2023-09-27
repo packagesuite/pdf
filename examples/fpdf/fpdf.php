@@ -9,15 +9,8 @@ $fpdf = new FPDF();
 $fpdf->SetCompression(false);
 $fpdf->AddPage();
 $fpdf->SetFont('Arial');
-$fpdf->Cell(18, 0.5, "Caçarola", 0, 0.5);
-$fpdf->Ln(2);
-$fpdf->Cell(18, 0.5, "Caçarola 2", 0, 0.5);
-
-$fpdf->AddPage();
-$fpdf->SetFont('Arial');
-$fpdf->Cell(18, 0.5, "Caçarola", 0, 0.5);
-$fpdf->Ln(2);
-$fpdf->Cell(18, 0.5, "Caçarola 2", 0, 0.5);
+$fpdf->SetTextColor('Arial');
+$fpdf->Cell(18, 0.5, "Caçarola", 1);
 
 $fpdf->Output('F', 'teste.pdf');
 

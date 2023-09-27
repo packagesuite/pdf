@@ -17,7 +17,7 @@ abstract class PdfObject
     /**
      * @var bool
      */
-    protected bool $compress = true;
+    protected bool $compress = false;
 
     /**
      * @var int

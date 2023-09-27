@@ -2,7 +2,7 @@
 
 namespace PackageSuitePdf;
 
-use PackageSuitePdf\Composition\Cell;
+use PackageSuitePdf\Composition\Cell\Cell;
 use PackageSuitePdf\Composition\Composer;
 use PackageSuitePdf\Object\Catalog;
 use PackageSuitePdf\Object\Page;

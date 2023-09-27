@@ -1,6 +1,8 @@
 <?php
 
-namespace PackageSuitePdf\Composition;
+namespace PackageSuitePdf\Composition\Page;
+
+use PackageSuitePdf\Composition\Cell\Cell;
 
 class Page
 {

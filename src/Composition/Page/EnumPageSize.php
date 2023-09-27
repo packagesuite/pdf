@@ -1,6 +1,6 @@
 <?php
 
-namespace PackageSuitePdf\Composition;
+namespace PackageSuitePdf\Composition\Page;
 
 enum EnumPageSize: string
 {

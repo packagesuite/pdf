@@ -1,7 +1,8 @@
 <?php
 
-namespace PackageSuitePdf\Composition;
+namespace PackageSuitePdf\Composition\Cell;
 
+use PackageSuitePdf\Composition\CompositionBuildInterface;
 use PackageSuitePdf\Exceptions\Axis\AxisLimitExecption;
 use PackageSuitePdf\Object\PositionTextObject;
 use PackageSuitePdf\Object\TextObject;
@@ -19,6 +20,11 @@ class Cell implements CompositionBuildInterface
     protected TextObject $textObject;
 
     /**
+     * @var CellStyle|null
+     */
+    protected ?CellStyle $cellStyle;
+
+    /**
      * @throws AxisLimitExecption
      */
     public function __construct(
@@ -28,6 +34,7 @@ class Cell implements CompositionBuildInterface
     ) {
         $this->positionTextObject = new PositionTextObject($axisX, $axisY);
         $this->text = $text;
+        $this->cellStyle = null;
     }
 
     /**
@@ -35,7 +42,22 @@ class Cell implements CompositionBuildInterface
      */
     public function build() : Cell
     {
-        $this->textObject = new TextObject($this->text, $this->positionTextObject);
+        $this->textObject = new TextObject(
+            $this->text,
+            $this->positionTextObject,
+            $this->cellStyle
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param CellStyle $cellStyle
+     * @return Cell
+     */
+    public function setStyle(CellStyle $cellStyle): Cell
+    {
+        $this->cellStyle = $cellStyle;
 
         return $this;
     }
