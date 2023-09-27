@@ -17,12 +17,34 @@ abstract class PdfObject
     /**
      * @var bool
      */
-    protected bool $compress = true;
+    protected bool $compress = false;
+
+    /**
+     * @var int
+     */
+    protected int $objectNumber;
 
     /**
      * @return PdfObject
      */
     abstract protected function build(): PdfObject;
+
+    /**
+     * @param int $objectNumber
+     * @return void
+     */
+    public function setObjectNumber(int $objectNumber): void
+    {
+        $this->objectNumber = $objectNumber;
+    }
+
+    /**
+     * @return int
+     */
+    public function getObjectNumber(): int
+    {
+        return $this->objectNumber;
+    }
 
     /**
      * @return string

@@ -8,9 +8,7 @@ use PackageSuitePdf\Object\Catalog;
 use PackageSuitePdf\Object\Page;
 use PackageSuitePdf\Object\Pages;
 use PackageSuitePdf\Object\PdfObject;
-use PackageSuitePdf\Object\PositionTextObject;
 use PackageSuitePdf\Object\ProcSet;
-use PackageSuitePdf\Object\TextObject;
 use PackageSuitePdf\Object\TextObjectPool;
 
 class Pdf
@@ -38,20 +36,19 @@ class Pdf
     public function __construct()
     {
         $this->buffer = '';
+        $this->objects = [];
         $this->composer = new Composer();
-
-        $this->addObject(new Catalog());
-        $this->addObject(new Pages());
-        $this->addObject(new Page());
-        $this->addObject(new ProcSet());
     }
 
     /**
      * @param PdfObject $object
      * @return Pdf
      */
-    private function addObject(PdfObject $object): static
+    private function registryObject(PdfObject $object): static
     {
+        $count = count($this->objects) + 1;
+        $object->setObjectNumber($count);
+
         $this->objects[] = $object;
 
         return $this;
@@ -92,16 +89,16 @@ class Pdf
 
     /**
      * @param PdfObject $object
-     * @param int $objectNumber
      * @return void
      */
-    private function newObject(PdfObject $object, int $objectNumber): void
+    private function newObject(PdfObject $object): void
     {
-        $object = sprintf($object->toPdfObject(), $objectNumber + 1);
+        $objectNumber = $object->getObjectNumber();
+        $object = sprintf($object->toPdfObject(), $objectNumber);
 
         $this->buffer($object);
 
-        $this->referenceTable[$objectNumber] = strlen($this->buffer);
+        $this->referenceTable[($objectNumber - 1)] = strlen($this->buffer);
     }
 
     /**
@@ -116,21 +113,35 @@ class Pdf
     {
         $this->buffer("%PDF-1.7" . PHP_EOL);
 
-        $objectNumber = 0;
+        $procSet = new ProcSet();
+        $this->registryObject($procSet);
 
-        /**
-         * @var int $key
-         * @var Object\PdfObject $object
-         */
-        foreach ($this->objects as $object) {
-            $this->newObject($object, $objectNumber);
-            $objectNumber++;
+        $pages = new Pages();
+        $this->registryObject($pages);
+
+        $catalog = new Catalog();
+        $catalog->setPagesObjectReference(($pages->getObjectNumber()));
+        $this->registryObject($catalog);
+
+        foreach ($composer->pages() as $page) {
+            $textObjects = array_map(fn (Cell $cell) => $cell->get(), $page->cells());
+            $textObjectPool = new TextObjectPool($textObjects);
+
+            $this->registryObject($textObjectPool);
+
+            $page = new Page();
+            $page->setParent($pages->getObjectNumber());
+            $page->setContentsObject($textObjectPool->getObjectNumber());
+            $page->setResoucesObject($procSet->getObjectNumber());
+
+            $this->registryObject($page);
+
+            $pages->addKid($page->getObjectNumber());
         }
 
-        $textObjects = array_map(fn (Cell $cell) => $cell->get(), $composer->cells());
-        $textObjectPool = new TextObjectPool($textObjects);
-
-        $this->newObject($textObjectPool, $objectNumber);
+        foreach ($this->objects as $object) {
+            $this->newObject($object);
+        }
 
         $this->makeXreference();
 

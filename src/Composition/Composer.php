@@ -5,9 +5,9 @@ namespace PackageSuitePdf\Composition;
 class Composer
 {
     /**
-     * @var Cell[]
+     * @var array
      */
-    protected array $cells = [];
+    protected array $pages = [];
 
     /**
      *
@@ -16,22 +16,27 @@ class Composer
     {
     }
 
-
     /**
-     * @return $this
+     * @param string $orientation
+     * @param string $size
+     * @param string $rotation
+     * @return Page
+     * @throws PageSizeException
      */
-    public function cell(Cell $cell) : Composer
+    public function page(string $orientation = 'P', string $size = 'A4', string $rotation = ''): Page
     {
-        $this->cells[] = $cell;
+        $page = new Page($orientation, $size, $rotation);
 
-        return $this;
+        $this->pages[] = $page;
+
+        return $page;
     }
 
     /**
-     * @return Cell[]
+     * @return Page[]
      */
-    public function cells(): array
+    public function pages(): array
     {
-        return $this->cells;
+        return $this->pages;
     }
 }
