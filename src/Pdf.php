@@ -29,6 +29,11 @@ class Pdf
     protected Composer $composer;
 
     /**
+     * @var Catalog
+     */
+    protected Catalog $catalog;
+
+    /**
      * @var array
      */
     private array $referenceTable;
@@ -42,18 +47,15 @@ class Pdf
 
     /**
      * @param PdfObject $object
-     * @return Pdf
+     * @return void
      */
-    private function registryObject(PdfObject $object): static
+    private function registryObject(PdfObject $object): void
     {
         $count = count($this->objects) + 1;
         $object->setObjectNumber($count);
 
         $this->objects[] = $object;
-
-        return $this;
     }
-
 
     private function makeXreference(): void
     {
@@ -71,7 +73,7 @@ class Pdf
         }
 
         $this->buffer("trailer" . PHP_EOL)
-            ->buffer("<< /Root 1 0 R  /Size 14 >>" . PHP_EOL)
+            ->buffer("<< /Root {$this->catalog->getObjectNumber()} 0 R  /Size 14 >>" . PHP_EOL)
             ->buffer("startxref" . PHP_EOL)
             ->buffer(strlen($this->buffer) . PHP_EOL);
     }
@@ -122,6 +124,7 @@ class Pdf
         $catalog = new Catalog();
         $catalog->setPagesObjectReference(($pages->getObjectNumber()));
         $this->registryObject($catalog);
+        $this->catalog = $catalog;
 
         foreach ($composer->pages() as $page) {
             $textObjects = array_map(fn (Cell $cell) => $cell->get(), $page->cells());

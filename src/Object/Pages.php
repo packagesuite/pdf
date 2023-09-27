@@ -53,9 +53,9 @@ class Pages extends PdfObject
         $kids = "";
 
         foreach ($this->kids as $kid) {
-            $kids .= " [ {$kid} 0 R ] ";
+            $kids .=  "$kid 0 R ";
         }
 
-        return $kids;
+        return "[ " . $kids . "] ";
     }
 }
